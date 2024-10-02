@@ -1,6 +1,6 @@
 /*===================================CPEG222====================================
  * Program: Proj2_Template.c
- * Authors:  Austin Conway, Khai McCaskill, and Zitong Cheng
+ * Authors: Raphael Daluz, Mekhai Waples
  * Date:  9/23/2022
  * Description: This template uses an on-board BTN to control
  * the alarm, turning it on and off, and the SSD, which will display
