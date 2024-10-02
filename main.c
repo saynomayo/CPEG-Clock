@@ -88,7 +88,7 @@ char min1 = 0;
 char min2 = 0;
 char sec1 = 0;
 char sec2 = 0;
-char selection = 'selection';
+int selection = 1;
 /* ----------------------------- Main --------------------------------------- */
 int main(void)
 {
@@ -104,7 +104,6 @@ int main(void)
         handle_button_presses();
         if (mode==SET_TIMER) {
             set_time();
-            
         }
         SSD_WriteDigits(sec1,sec2,min1,min2,0,0,0,0);//think about how to edit this
         delay_ms(10);
@@ -154,8 +153,13 @@ void initialize_ports()
 void initialize_output_states()
 {
 
-    LCD_WriteStringAtPos("    Welcome     ", 0, 0); //Display "Welcome" at line 0,
-    LCD_WriteStringAtPos("   Press BtnC   ", 1, 0); //Display "Press BtnC" at line 
+    LCD_WriteStringAtPos("    GROUP 8     ", 0, 0); //Display "Welcome" at line 0,
+    if (mode==SET_TIMER) {
+        LCD_WriteStringAtPos("   Set Time?   ", 1, 0); //Display "Press BtnC" at line 
+    }
+    else {
+        LCD_WriteStringAtPos("   sum ting wong   ", 1, 0);
+    }
  
     turnOffAlarm();
 }
@@ -205,7 +209,7 @@ void handle_button_presses()
         buttonsLockedC = FALSE;
     }
 //Handles Button U
-    if (BtnU_RAW && !buttonsLockedU)
+    else if (BtnU_RAW && !buttonsLockedU)
     {
         delay_ms(BUTTON_DEBOUNCE_DELAY_MS); // debounce
         buttonsLockedU = TRUE;
@@ -217,7 +221,7 @@ void handle_button_presses()
         buttonsLockedU = FALSE;
     }
 //Handles Button D
-    if (BtnD_RAW && !buttonsLockedD)
+    else if (BtnD_RAW && !buttonsLockedD)
     {
         delay_ms(BUTTON_DEBOUNCE_DELAY_MS); // debounce
         buttonsLockedD = TRUE;
@@ -229,7 +233,7 @@ void handle_button_presses()
         buttonsLockedD = FALSE;
     }
 //Handles Button L
-    if (BtnL_RAW && !buttonsLockedL)
+    else if (BtnL_RAW && !buttonsLockedL)
     {
         delay_ms(BUTTON_DEBOUNCE_DELAY_MS); // debounce
         buttonsLockedL = TRUE;
@@ -241,7 +245,7 @@ void handle_button_presses()
         buttonsLockedL = FALSE;
     }
 //Handles Button R
-    if (BtnR_RAW && !buttonsLockedR)
+    else if (BtnR_RAW && !buttonsLockedR)
     {
         delay_ms(BUTTON_DEBOUNCE_DELAY_MS); // debounce
         buttonsLockedR = TRUE;
@@ -324,7 +328,8 @@ void digit_algorithm(void) { //Algorithm that causes digits to flip when necessa
 };
 
 void set_time(void) {
-    if (selection == 'seconds') {
+    //1 is seconds, 2 is minutes
+    if (selection == 1) {
         if(pressedUnlockedBtnU) {
             sec1++;
         }
@@ -332,7 +337,7 @@ void set_time(void) {
             sec1--;
         }
     }
-    else if (selection == 'minutes') {
+    else if (selection == 2) {
         if(pressedUnlockedBtnU) {
             min1++;
         }
