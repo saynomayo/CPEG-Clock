@@ -37,7 +37,8 @@ void turnOnAlarm() ;
 void turnOffAlarm() ;
 void set_time();
 void run_clock();
-void digit_algorithm();
+void setting_algorithm();
+void ticking_algorithm();
 /* ------------------------ Constant Definitions ---------------------------- */
 #define SYS_FREQ (80000000L) // 80MHz system clock
 #define _80Mhz_ (80000000L)
@@ -288,41 +289,52 @@ void __ISR(_TIMER_3_VECTOR, IPL7AUTO) Timer3ISR(void)
  * to see what you need to add to use the RGB.
 **/
 
-void digit_algorithm(void) { //Algorithm that causes digits to flip when necessary
-    //if clock increments past max
-    if(min2==2 && min1 == 4){
-        min2=0;
-        min1=0;
+void setting_algorithm(void) { //Algorithm that causes digits to flip when necessary
+    //maximum seconds
+    if (sec2>5) {
         sec2=0;
         sec1=0;
     }
-    // if clock hits minimum and seconds decreased
-    if(min2==0 && min1==0 && sec2==0 && sec1 < 0){
-        min2=2;
-        min1=3;
+    //minimum seconds
+    if (sec2<0) {
         sec2=5;
         sec1=9;
     }
-    //handle maximum seconds
-    if(sec1>9){
+    //maximum minutes
+    if (min2==2 && min1>3) {
+        min2=0;
+        min1=0;
+    }
+    //minimum minutes
+    if (min2<0) {
+        min2=2;
+        min1=3;
+    }
+    //minutes wrap up
+    if (min1>9){
+        min1=0;
+        min2++;
+    }
+    //minutes wrap down
+    if (min1<0) {
+        min1=9;
+        min2--;
+    }
+    //seconds wrap up
+    if (sec1>9) {
         sec1=0;
         sec2++;
     }
-    if(sec2>5){
-        sec2=0;
-        sec1=0;
-        min1++;
-    }
-    //handle minimum seconds
-    if (sec2<0) {
-        sec2 = 5;
-    }
+    //seconds wrap down
     if (sec1<0) {
         sec1=9;
         sec2--;
     }
-    
 };
+
+void ticking_algorithm(void) {
+    
+}
 
 void set_time(void) {
     //1 is seconds, 2 is minutes
@@ -351,6 +363,6 @@ void set_time(void) {
             min1--;
         }
     }
-    digit_algorithm();
+    setting_algorithm();
 }
     
