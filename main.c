@@ -35,12 +35,19 @@ void handle_button_presses();
 void delay_ms(int milliseconds);
 void turnOnAlarm() ;
 void turnOffAlarm() ;
+void set_time();
+void run_clock();
+void digit_algorithm();
 /* ------------------------ Constant Definitions ---------------------------- */
 #define SYS_FREQ (80000000L) // 80MHz system clock
 #define _80Mhz_ (80000000L)
 #define LOOPS_NEEDED_TO_DELAY_ONE_MS_AT_80MHz 1426
 #define LOOPS_NEEDED_TO_DELAY_ONE_MS (LOOPS_NEEDED_TO_DELAY_ONE_MS_AT_80MHz * (SYS_FREQ / _80Mhz_))
 #define BtnC_RAW PORTFbits.RF0
+#define BtnL_RAW PORTBbits.RB0
+#define BtnR_RAW PORTBbits.RB8
+#define BtnU_RAW PORTBbits.RB1
+#define BtnD_RAW PORTAbits.RA15
 #define TRUE 1
 #define FALSE 0
 #define BUTTON_DEBOUNCE_DELAY_MS 20
@@ -64,12 +71,24 @@ unsigned short *pAudioSamples;
 int cntAudioBuf, idxAudioBuf;
 /***** End of speaker declararions  ******/  // shouldn't touch
 
-typedef enum {ALARM_ON, ALARM_OFF} eModes ;
+typedef enum {SET_TIMER, TIMER_TICKS, ALARM_ON} eModes ;
 /* -------------------- Global Variable Declarations ------------------------ */
 char buttonsLockedC = FALSE;
 char pressedUnlockedBtnC = FALSE;
-eModes mode = ALARM_OFF ;
-char val = 0 ;
+char buttonsLockedU = FALSE;
+char pressedUnlockedBtnU = FALSE;
+char buttonsLockedD = FALSE;
+char pressedUnlockedBtnD = FALSE;
+char buttonsLockedL = FALSE;
+char pressedUnlockedBtnL = FALSE;
+char buttonsLockedR = FALSE;
+char pressedUnlockedBtnR = FALSE;
+eModes mode = SET_TIMER ;
+char min1 = 0;
+char min2 = 0;
+char sec1 = 0;
+char sec2 = 0;
+char selection = 'selection';
 /* ----------------------------- Main --------------------------------------- */
 int main(void)
 {
@@ -83,28 +102,12 @@ int main(void)
         /*-------------------- Main logic and actions start 
 --------------------------*/
         handle_button_presses();
-        if(mode==ALARM_OFF)
-        {
-            if (pressedUnlockedBtnC) 
-            {
-                //turns on alarm, update SSD value
-                val++ ;
-                mode=ALARM_ON;
-                turnOnAlarm() ;
-            }
+        if (mode==SET_TIMER) {
+            set_time();
+            
         }
-        else if(mode==ALARM_ON)
-        {
-            if (pressedUnlockedBtnC) 
-            {
-                //turns off alarm, update SSD value
-                val++ ;
-                mode=ALARM_OFF;
-                turnOffAlarm() ;
-            }
-        }
-         SSD_WriteDigits(val%16,0,0,0,0,0,0,0);//think about how to edit this
-         delay_ms(10);
+        SSD_WriteDigits(sec1,sec2,min1,min2,0,0,0,0);//think about how to edit this
+        delay_ms(10);
 
     }
 }
@@ -117,6 +120,10 @@ void initialize_ports()
      *  BtnC is connected to that pins. When the tristate of a pin is set high,
      *  the pin is configured as a digital input. */
     TRISFbits.TRISF0 = 1;
+    TRISBbits.TRISB0 = 1;
+    TRISBbits.TRISB8 = 1;
+    TRISAbits.TRISA15 = 1;
+    TRISBbits.TRISB1 = 1;
     
     LCD_Init(); // A library function provided by Digilent
     SSD_Init();    //SSD Init
@@ -181,6 +188,11 @@ void turnOffAlarm()
 void handle_button_presses()
 {
     pressedUnlockedBtnC = FALSE;
+    pressedUnlockedBtnU = FALSE;
+    pressedUnlockedBtnD = FALSE;
+    pressedUnlockedBtnL = FALSE;
+    pressedUnlockedBtnR = FALSE;
+//Handles Button C
     if (BtnC_RAW && !buttonsLockedC)
     {
         delay_ms(BUTTON_DEBOUNCE_DELAY_MS); // debounce
@@ -191,6 +203,54 @@ void handle_button_presses()
     {
         delay_ms(BUTTON_DEBOUNCE_DELAY_MS); // debounce
         buttonsLockedC = FALSE;
+    }
+//Handles Button U
+    if (BtnU_RAW && !buttonsLockedU)
+    {
+        delay_ms(BUTTON_DEBOUNCE_DELAY_MS); // debounce
+        buttonsLockedU = TRUE;
+        pressedUnlockedBtnU = TRUE;
+    }
+    else if (!BtnU_RAW && buttonsLockedU)
+    {
+        delay_ms(BUTTON_DEBOUNCE_DELAY_MS); // debounce
+        buttonsLockedU = FALSE;
+    }
+//Handles Button D
+    if (BtnD_RAW && !buttonsLockedD)
+    {
+        delay_ms(BUTTON_DEBOUNCE_DELAY_MS); // debounce
+        buttonsLockedD = TRUE;
+        pressedUnlockedBtnD = TRUE;
+    }
+    else if (!BtnD_RAW && buttonsLockedD)
+    {
+        delay_ms(BUTTON_DEBOUNCE_DELAY_MS); // debounce
+        buttonsLockedD = FALSE;
+    }
+//Handles Button L
+    if (BtnL_RAW && !buttonsLockedL)
+    {
+        delay_ms(BUTTON_DEBOUNCE_DELAY_MS); // debounce
+        buttonsLockedL = TRUE;
+        pressedUnlockedBtnL = TRUE;
+    }
+    else if (!BtnL_RAW && buttonsLockedL)
+    {
+        delay_ms(BUTTON_DEBOUNCE_DELAY_MS); // debounce
+        buttonsLockedL = FALSE;
+    }
+//Handles Button R
+    if (BtnR_RAW && !buttonsLockedR)
+    {
+        delay_ms(BUTTON_DEBOUNCE_DELAY_MS); // debounce
+        buttonsLockedR = TRUE;
+        pressedUnlockedBtnR = TRUE;
+    }
+    else if (!BtnR_RAW && buttonsLockedR)
+    {
+        delay_ms(BUTTON_DEBOUNCE_DELAY_MS); // debounce
+        buttonsLockedR = FALSE;
     }
 }
 void delay_ms(int milliseconds)
@@ -220,3 +280,65 @@ void __ISR(_TIMER_3_VECTOR, IPL7AUTO) Timer3ISR(void)
  * another aspect of the board which we do provide. Check rgb.c and rgb.h as well as the functions we give you
  * to see what you need to add to use the RGB.
 **/
+
+void digit_algorithm(void) { //Algorithm that causes digits to flip when necessary
+    if(sec1>9){
+        sec1=0;
+        sec2++;
+    }
+    if(sec2>5){
+        sec2=0;
+        sec1=0;
+        min1++;
+    }
+    if(min1>9){
+        min1=0;
+        sec2=0;
+        sec1=0;
+        min2++;
+    }
+    if(min1>9){
+        min2=0;
+        min1=0;
+        sec2=0;
+        sec1=0;
+    }
+    if(sec1<0){
+        sec1=9;
+        sec2--;
+    }
+    if(sec1<0){
+        sec1=5;
+        min2--;
+    }
+    if(min1<0){
+        min1=9;
+        min2--;
+    }
+    if(min2<0){
+        min2=9;
+        min1=9;
+        sec2=5;
+        sec1=9;
+    }
+};
+
+void set_time(void) {
+    if (selection == 'seconds') {
+        if(pressedUnlockedBtnU) {
+            sec1++;
+        }
+        else if (pressedUnlockedBtnD) {
+            sec1--;
+        }
+    }
+    else if (selection == 'minutes') {
+        if(pressedUnlockedBtnU) {
+            min1++;
+        }
+        else if (pressedUnlockedBtnD) {
+            min1--;
+        }
+    }
+}
+    
