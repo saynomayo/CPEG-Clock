@@ -1,7 +1,7 @@
 /*===================================CPEG222====================================
  * Program: Proj2_Template.c
  * Authors: Raphael Daluz, Mekhai Waples
- * Date:  9/23/2022
+ * Date:  10/4/2024
  * Description: This template uses an on-board BTN to control
  * the alarm, turning it on and off, and the SSD, which will display
  * the number of times btnC is pressed.
