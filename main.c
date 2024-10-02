@@ -289,6 +289,21 @@ void __ISR(_TIMER_3_VECTOR, IPL7AUTO) Timer3ISR(void)
 **/
 
 void digit_algorithm(void) { //Algorithm that causes digits to flip when necessary
+    //if clock increments past max
+    if(min2==2 && min1 == 4){
+        min2=0;
+        min1=0;
+        sec2=0;
+        sec1=0;
+    }
+    // if clock hits minimum and seconds decreased
+    if(min2==0 && min1==0 && sec2==0 && sec1 < 0){
+        min2=2;
+        min1=3;
+        sec2=5;
+        sec1=9;
+    }
+    //handle maximum seconds
     if(sec1>9){
         sec1=0;
         sec2++;
@@ -298,36 +313,15 @@ void digit_algorithm(void) { //Algorithm that causes digits to flip when necessa
         sec1=0;
         min1++;
     }
-    if(min1>9){
-        min1=0;
-        sec2=0;
-        sec1=0;
-        min2++;
+    //handle minimum seconds
+    if (sec2<0) {
+        sec2 = 5;
     }
-    if(min1>9){
-        min2=0;
-        min1=0;
-        sec2=0;
-        sec1=0;
-    }
-    if(sec1<0){
+    if (sec1<0) {
         sec1=9;
         sec2--;
     }
-    if(sec1<0){
-        sec1=5;
-        min2--;
-    }
-    if(min1<0){
-        min1=9;
-        min2--;
-    }
-    if(min2<0){
-        min2=9;
-        min1=9;
-        sec2=5;
-        sec1=9;
-    }
+    
 };
 
 void set_time(void) {
