@@ -123,6 +123,9 @@ void initialize_ports()
     TRISBbits.TRISB8 = 1;
     TRISAbits.TRISA15 = 1;
     TRISBbits.TRISB1 = 1;
+    ANSELBbits.ANSB1 = 0;
+    ANSELBbits.ANSB0 = 0;
+    ANSELBbits.ANSB8 = 0;
     
     LCD_Init(); // A library function provided by Digilent
     SSD_Init();    //SSD Init
@@ -329,6 +332,15 @@ void digit_algorithm(void) { //Algorithm that causes digits to flip when necessa
 
 void set_time(void) {
     //1 is seconds, 2 is minutes
+    
+    //change selection
+    if (pressedUnlockedBtnL) {
+        selection = 2;
+    }
+    else if (pressedUnlockedBtnR) {
+        selection = 1;
+    }
+    //check selection
     if (selection == 1) {
         if(pressedUnlockedBtnU) {
             sec1++;
@@ -345,5 +357,6 @@ void set_time(void) {
             min1--;
         }
     }
+    digit_algorithm();
 }
     
