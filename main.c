@@ -161,6 +161,7 @@ void initialize_output_states()
     if (mode==SET_TIMER) {
         LCD_WriteStringAtPos("   Set Time?   ", 1, 0); //Display "Press BtnC" at line 
     }
+    
     else {
         LCD_WriteStringAtPos("   sum ting wong   ", 1, 0);
     }
@@ -333,18 +334,48 @@ void setting_algorithm(void) { //Algorithm that causes digits to flip when neces
 };
 
 void ticking_algorithm(void) {
+    //resets if clock hit maximum, 24:00 -> 00:00
+    if (min2 == 2 && min1 == 4) {
+        min2 = 0;
+        min1 = 0;
+        sec2 = 0;
+        sec1 = 0;
+    }
+    //seconds count up
+    if (sec1 > 9) {
+        sec1 = 0;
+        sec2++ ;
+    }  
+    if (sec2 > 5) {
+        sec2 = 0;
+        min1++ ;
+    }
+        
+    //minutes count up
+    if (min1 > 9) {
+        min1 = 0;
+        min2++ ;
+    }
     
 }
 
 void set_time(void) {
-    //1 is seconds, 2 is minutes
-    
-    //change selection
+    //Handles "SET_TIMER" mode
+    //change selection, 1 is seconds, 2 is minutes
     if (pressedUnlockedBtnL) {
-        selection = 2;
+        if (selection == 1) {
+            selection = 2;
+        }
+        else if (selection == 2) {
+            selection = 1;
+        }
     }
-    else if (pressedUnlockedBtnR) {
-        selection = 1;
+    //reset button
+    if (pressedUnlockedBtnR) {
+        sec1 = 0;
+        sec2 = 0;
+        min1 = 0;
+        min2 = 0;
     }
     //check selection
     if (selection == 1) {
@@ -366,3 +397,9 @@ void set_time(void) {
     setting_algorithm();
 }
     
+void run_clock(void) {
+    //Handles "TIMER_TICKS" mode
+    
+    
+    ticking_algorithm();
+}
