@@ -33,12 +33,12 @@ void initialize_ports();
 void initialize_output_states();
 void handle_button_presses();
 void delay_ms(int milliseconds);
-void turnOnAlarm() ;
-void turnOffAlarm() ;
-void set_time();
-void run_clock();
-void setting_algorithm();
-void ticking_algorithm();
+void turnOnAlarm(void) ;
+void turnOffAlarm(void) ;
+void set_time(void);
+void run_clock(void);
+void setting_algorithm(void);
+void ticking_algorithm(void);
 /* ------------------------ Constant Definitions ---------------------------- */
 #define SYS_FREQ (80000000L) // 80MHz system clock
 #define _80Mhz_ (80000000L)
@@ -87,12 +87,12 @@ char pressedUnlockedBtnL = FALSE;
 char buttonsLockedR = FALSE;
 char pressedUnlockedBtnR = FALSE;
 eModes mode = SET_TIMER ;
-eModes mode = TIMER_TICKS ;
 char min1 = 0;
 char min2 = 0;
 char sec1 = 0;
 char sec2 = 0;
 int selection = 1;
+int counter=0;
 /* ----------------------------- Main --------------------------------------- */
 int main(void)
 {
@@ -111,25 +111,19 @@ int main(void)
             set_time();
             
             if (pressedUnlockedBtnC) {
-                mode = TIMER_TICKS ;
+                mode = TIMER_TICKS;
             }
         }
         //Mode 3, Clock is counting up.
         else if (mode==TIMER_TICKS) {
             run_clock();
-            
             if (pressedUnlockedBtnC) {
-                mode = SET_TIMER
-        }
-        
-            
+                mode = SET_TIMER;
+            }    
         }
         SSD_WriteDigits(sec1,sec2,min1,min2,0,0,0,0);//think about how to edit this
-        delay_ms(10);
-
     }
 }
-
 void initialize_ports()
 {
     DDPCONbits.JTAGEN = 0; // Required to use Pin RA0 (connected to LED 0) as IO
@@ -190,6 +184,7 @@ void initialize_output_states()
  
     turnOffAlarm();
 }
+
 /* This below function turns on the alarm*/
 void turnOnAlarm()
 {
@@ -378,9 +373,11 @@ void ticking_algorithm(void) {
         min1 = 0;
         min2++ ;
     }
+
 }
 
 void set_time(void) {
+    LCD_WriteStringAtPos("   Set Time?   ", 1, 0); //Display "Set Time?" at line 1
     //Handles "SET_TIMER" mode
     //change selection, 1 is seconds, 2 is minutes
     if (pressedUnlockedBtnL) {
@@ -420,6 +417,11 @@ void set_time(void) {
     
 void run_clock(void) {
     //Handles "TIMER_TICKS" mode
+    LCD_WriteStringAtPos("   Display Time   ", 1, 0); //Display "Press BtnC" at line 1
     ticking_algorithm();
-    sec1++;
+    if (counter>=180) {
+        sec1++;
+        counter=0;
+    }
+    counter++;
 }
