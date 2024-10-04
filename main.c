@@ -72,7 +72,9 @@ unsigned short *pAudioSamples;
 int cntAudioBuf, idxAudioBuf;
 /***** End of speaker declararions  ******/  // shouldn't touch
 
-typedef enum {SET_TIMER, TIMER_TICKS, ALARM_ON} eModes ;
+//Mode 1 = SET_TIMER, Mode 3 = TIMER_TICKS
+typedef enum {SET_TIMER, TIMER_TICKS} eModes ;
+
 /* -------------------- Global Variable Declarations ------------------------ */
 char buttonsLockedC = FALSE;
 char pressedUnlockedBtnC = FALSE;
@@ -85,6 +87,7 @@ char pressedUnlockedBtnL = FALSE;
 char buttonsLockedR = FALSE;
 char pressedUnlockedBtnR = FALSE;
 eModes mode = SET_TIMER ;
+eModes mode = TIMER_TICKS ;
 char min1 = 0;
 char min2 = 0;
 char sec1 = 0;
@@ -103,8 +106,23 @@ int main(void)
         /*-------------------- Main logic and actions start 
 --------------------------*/
         handle_button_presses();
+        //Mode 1, Set the start time.
         if (mode==SET_TIMER) {
             set_time();
+            
+            if (pressedUnlockedBtnC) {
+                mode = TIMER_TICKS ;
+            }
+        }
+        //Mode 3, Clock is counting up.
+        else if (mode==TIMER_TICKS) {
+            run_clock();
+            
+            if (pressedUnlockedBtnC) {
+                mode = SET_TIMER
+        }
+        
+            
         }
         SSD_WriteDigits(sec1,sec2,min1,min2,0,0,0,0);//think about how to edit this
         delay_ms(10);
@@ -159,7 +177,11 @@ void initialize_output_states()
 
     LCD_WriteStringAtPos("    GROUP 8     ", 0, 0); //Display "Welcome" at line 0,
     if (mode==SET_TIMER) {
-        LCD_WriteStringAtPos("   Set Time?   ", 1, 0); //Display "Press BtnC" at line 
+        LCD_WriteStringAtPos("   Set Time?   ", 1, 0); //Display "Set Time?" at line 1
+    }
+    
+    else if (mode==TIMER_TICKS){
+        LCD_WriteStringAtPos("   Display Time   ", 1, 0); //Display "Press BtnC" at line 1
     }
     
     else {
@@ -356,7 +378,6 @@ void ticking_algorithm(void) {
         min1 = 0;
         min2++ ;
     }
-    
 }
 
 void set_time(void) {
@@ -399,7 +420,6 @@ void set_time(void) {
     
 void run_clock(void) {
     //Handles "TIMER_TICKS" mode
-    
-    
     ticking_algorithm();
+    sec1++;
 }
