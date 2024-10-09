@@ -39,6 +39,7 @@ void set_time(void);
 void run_clock(void);
 void setting_algorithm(void);
 void ticking_algorithm(void);
+void set_alarm();
 /* ------------------------ Constant Definitions ---------------------------- */
 #define SYS_FREQ (80000000L) // 80MHz system clock
 #define _80Mhz_ (80000000L)
@@ -73,7 +74,7 @@ int cntAudioBuf, idxAudioBuf;
 /***** End of speaker declararions  ******/  // shouldn't touch
 
 //Mode 1 = SET_TIMER, Mode 3 = TIMER_TICKS
-typedef enum {SET_TIMER, TIMER_TICKS} eModes ;
+typedef enum {SET_TIMER, SET_ALARM, TIMER_TICKS, ALARMING} eModes ;
 
 /* -------------------- Global Variable Declarations ------------------------ */
 char buttonsLockedC = FALSE;
@@ -111,8 +112,12 @@ int main(void)
             set_time();
             
             if (pressedUnlockedBtnC) {
-                mode = TIMER_TICKS;
+                mode = SET_ALARM;
             }
+        }
+        else if (mode==SET_ALARM) {
+            set_alarm();
+            
         }
         //Mode 3, Clock is counting up.
         else if (mode==TIMER_TICKS) {
@@ -424,4 +429,8 @@ void run_clock(void) {
         counter=0;
     }
     counter++;
+}
+
+void set_alarm(void) {
+    //sets time values that alarm should beep on
 }
