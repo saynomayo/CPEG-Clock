@@ -41,6 +41,7 @@ void setting_algorithm(void);
 void ticking_algorithm(void);
 void set_alarm(void);
 void setting_alarm_algorithm(void);
+void alarm(void);
 /* ------------------------ Constant Definitions ---------------------------- */
 #define SYS_FREQ (80000000L) // 80MHz system clock
 #define _80Mhz_ (80000000L)
@@ -114,24 +115,34 @@ int main(void)
         handle_button_presses();
         //Mode 1, Set the start time.
         if (mode==SET_TIMER) {
+            LCD_WriteStringAtPos("", 1, 0);
             set_time();
-            
+            SSD_WriteDigits(sec1,sec2,min1,min2,0,0,0,0);
             if (pressedUnlockedBtnC) {
+                LCD_WriteStringAtPos("", 1,0);
                 mode = SET_ALARM;
             }
         }
         else if (mode==SET_ALARM) {
             set_alarm();
-            
+            SSD_WriteDigits(alarm_sec1,alarm_sec2,alarm_min1,alarm_min2,0,0,0,0);
+            if (pressedUnlockedBtnC) {
+                LCD_WriteStringAtPos("", 1,0);
+                mode =TIMER_TICKS;
+            }
         }
         //Mode 3, Clock is counting up.
         else if (mode==TIMER_TICKS) {
             run_clock();
+            SSD_WriteDigits(sec1,sec2,min1,min2,0,0,0,0);
             if (pressedUnlockedBtnC) {
+                LCD_WriteStringAtPos("", 1,0);
                 mode = SET_TIMER;
-            }    
+            }
         }
-        SSD_WriteDigits(sec1,sec2,min1,min2,0,0,0,0);//think about how to edit this
+        else if (mode==ALARMING) {
+            alarm();
+        }
     }
 }
 void initialize_ports()
@@ -427,8 +438,11 @@ void set_time(void) {
     
 void run_clock(void) {
     //Handles "TIMER_TICKS" mode
-    LCD_WriteStringAtPos("   Display Time   ", 1, 0); //Display "Press BtnC" at line 1
+    LCD_WriteStringAtPos("  Display Time   ", 1, 0); //Display "Press BtnC" at line 1
     ticking_algorithm();
+    if (alarm_sec1 == sec1 && alarm_sec2 == sec2 && alarm_min1 == min1 && alarm_min2 == min2) {
+        mode=ALARMING;
+    }
     if (counter>=180) {
         sec1++;
         counter=0;
@@ -517,4 +531,23 @@ void setting_alarm_algorithm(void) { //Algorithm that causes digits to flip when
         alarm_sec1=9;
         alarm_sec2--;
     }
-};
+}
+
+void alarm() {
+    if (counter>=180) {
+        sec1++;
+        counter=0;
+    }
+    counter++;
+    if (sec1%1==0) {
+        turnOnAlarm();
+        //SSDs on
+        //RGB on
+    }
+    else if (sec1%1==1) {
+        turnOffAlarm();
+        //SSDs off
+        //RGB off
+    }
+}
+    
