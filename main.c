@@ -39,7 +39,8 @@ void set_time(void);
 void run_clock(void);
 void setting_algorithm(void);
 void ticking_algorithm(void);
-void set_alarm();
+void set_alarm(void);
+void setting_alarm_algorithm(void);
 /* ------------------------ Constant Definitions ---------------------------- */
 #define SYS_FREQ (80000000L) // 80MHz system clock
 #define _80Mhz_ (80000000L)
@@ -92,6 +93,10 @@ char min1 = 0;
 char min2 = 0;
 char sec1 = 0;
 char sec2 = 0;
+char alarm_min1 = 0;
+char alarm_min2 = 0;
+char alarm_sec1 = 0;
+char alarm_sec2 = 0;
 int selection = 1;
 int counter=0;
 /* ----------------------------- Main --------------------------------------- */
@@ -382,7 +387,7 @@ void ticking_algorithm(void) {
 }
 
 void set_time(void) {
-    LCD_WriteStringAtPos("   Set Time?   ", 1, 0); //Display "Set Time?" at line 1
+    LCD_WriteStringAtPos("   Set Time   ", 1, 0); //Display "Set Time?" at line 1
     //Handles "SET_TIMER" mode
     //change selection, 1 is seconds, 2 is minutes
     if (pressedUnlockedBtnL) {
@@ -433,4 +438,83 @@ void run_clock(void) {
 
 void set_alarm(void) {
     //sets time values that alarm should beep on
+    LCD_WriteStringAtPos("   Set Alarm   ", 1, 0); //Display "Set Time?" at line 1
+    //Handles "SET_TIMER" mode
+    //change selection, 1 is seconds, 2 is minutes
+    if (pressedUnlockedBtnL) {
+        if (selection == 1) {
+            selection = 2;
+        }
+        else if (selection == 2) {
+            selection = 1;
+        }
+    }
+    //reset button
+    if (pressedUnlockedBtnR) {
+        alarm_sec1 = 0;
+        alarm_sec2 = 0;
+        alarm_min1 = 0;
+        alarm_min2 = 0;
+    }
+    //check selection
+    if (selection == 1) {
+        if(pressedUnlockedBtnU) {
+            alarm_sec1++;
+        }
+        else if (pressedUnlockedBtnD) {
+            alarm_sec1--;
+        }
+    }
+    else if (selection == 2) {
+        if(pressedUnlockedBtnU) {
+            alarm_min1++;
+        }
+        else if (pressedUnlockedBtnD) {
+            alarm_min1--;
+        }
+    }
+    setting_alarm_algorithm();
 }
+   
+void setting_alarm_algorithm(void) { //Algorithm that causes digits to flip when necessary
+    //maximum seconds
+    if (alarm_sec2>5) {
+        alarm_sec2=0;
+        alarm_sec1=0;
+    }
+    //minimum seconds
+    if (alarm_sec2<0) {
+        alarm_sec2=5;
+        alarm_sec1=9;
+    }
+    //maximum minutes
+    if (alarm_min2==2 && alarm_min1>3) {
+        alarm_min2=0;
+        alarm_min1=0;
+    }
+    //minimum minutes
+    if (alarm_min2<0) {
+        alarm_min2=2;
+        alarm_min1=3;
+    }
+    //minutes wrap up
+    if (alarm_min1>9){
+        alarm_min1=0;
+        alarm_min2++;
+    }
+    //minutes wrap down
+    if (alarm_min1<0) {
+        alarm_min1=9;
+        alarm_min2--;
+    }
+    //seconds wrap up
+    if (alarm_sec1>9) {
+        alarm_sec1=0;
+        alarm_sec2++;
+    }
+    //seconds wrap down
+    if (alarm_sec1<0) {
+        alarm_sec1=9;
+        alarm_sec2--;
+    }
+};
