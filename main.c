@@ -28,6 +28,7 @@
 #include "lcd.h"    // NOTE: utils.c and utils.h must also be in your project 
                     //to use lcd.c
 #include"ssd.h"
+#include"rgbled.h"
 /* --------------------------- Forward Declarations-------------------------- */
 void initialize_ports();
 void initialize_output_states();
@@ -89,6 +90,7 @@ char buttonsLockedL = FALSE;
 char pressedUnlockedBtnL = FALSE;
 char buttonsLockedR = FALSE;
 char pressedUnlockedBtnR = FALSE;
+char pressedUnlockedBtnC_R = FALSE;
 eModes mode = SET_TIMER ;
 char min1 = 0;
 char min2 = 0;
@@ -128,7 +130,10 @@ int main(void)
             SSD_WriteDigits(alarm_sec1,alarm_sec2,alarm_min1,alarm_min2,0,0,0,0);
             if (pressedUnlockedBtnC) {
                 LCD_WriteStringAtPos("", 1,0);
-                mode =TIMER_TICKS;
+                mode=TIMER_TICKS;
+            }
+            if (pressedUnlockedBtnR) {
+                mode=SET_TIMER;
             }
         }
         //Mode 3, Clock is counting up.
@@ -137,11 +142,19 @@ int main(void)
             SSD_WriteDigits(sec1,sec2,min1,min2,0,0,0,0);
             if (pressedUnlockedBtnC) {
                 LCD_WriteStringAtPos("", 1,0);
-                mode = SET_TIMER;
+                mode=SET_ALARM;
+            }
+            else if (pressedUnlockedBtnR) {
+                mode=SET_TIMER;
             }
         }
         else if (mode==ALARMING) {
+            LCD_WriteStringAtPos("",1,0);
             alarm();
+            if (pressedUnlockedBtnC_R) {
+                RGBLED_SetValue(0x00,0x00,0x00);
+                mode=TIMER_TICKS;
+            }
         }
     }
 }
@@ -163,6 +176,7 @@ void initialize_ports()
     
     LCD_Init(); // A library function provided by Digilent
     SSD_Init();    //SSD Init
+    RGBLED_Init();
 
     // the following lines configure interrupts to control the speaker
     T3CONbits.ON = 0;       // turn off Timer3
@@ -239,65 +253,76 @@ void handle_button_presses()
     pressedUnlockedBtnD = FALSE;
     pressedUnlockedBtnL = FALSE;
     pressedUnlockedBtnR = FALSE;
-//Handles Button C
-    if (BtnC_RAW && !buttonsLockedC)
-    {
-        delay_ms(BUTTON_DEBOUNCE_DELAY_MS); // debounce
-        buttonsLockedC = TRUE;
-        pressedUnlockedBtnC = TRUE;
+    pressedUnlockedBtnC_R = FALSE;
+    
+    if (mode==ALARMING) {
+        if (BtnC_RAW && BtnR_RAW) {
+            buttonsLockedC=TRUE;
+            buttonsLockedR=TRUE;
+            mode=TIMER_TICKS;
+        }
     }
-    else if (!BtnC_RAW && buttonsLockedC)
-    {
-        delay_ms(BUTTON_DEBOUNCE_DELAY_MS); // debounce
-        buttonsLockedC = FALSE;
-    }
-//Handles Button U
-    else if (BtnU_RAW && !buttonsLockedU)
-    {
-        delay_ms(BUTTON_DEBOUNCE_DELAY_MS); // debounce
-        buttonsLockedU = TRUE;
-        pressedUnlockedBtnU = TRUE;
-    }
-    else if (!BtnU_RAW && buttonsLockedU)
-    {
-        delay_ms(BUTTON_DEBOUNCE_DELAY_MS); // debounce
-        buttonsLockedU = FALSE;
-    }
-//Handles Button D
-    else if (BtnD_RAW && !buttonsLockedD)
-    {
-        delay_ms(BUTTON_DEBOUNCE_DELAY_MS); // debounce
-        buttonsLockedD = TRUE;
-        pressedUnlockedBtnD = TRUE;
-    }
-    else if (!BtnD_RAW && buttonsLockedD)
-    {
-        delay_ms(BUTTON_DEBOUNCE_DELAY_MS); // debounce
-        buttonsLockedD = FALSE;
-    }
-//Handles Button L
-    else if (BtnL_RAW && !buttonsLockedL)
-    {
-        delay_ms(BUTTON_DEBOUNCE_DELAY_MS); // debounce
-        buttonsLockedL = TRUE;
-        pressedUnlockedBtnL = TRUE;
-    }
-    else if (!BtnL_RAW && buttonsLockedL)
-    {
-        delay_ms(BUTTON_DEBOUNCE_DELAY_MS); // debounce
-        buttonsLockedL = FALSE;
-    }
-//Handles Button R
-    else if (BtnR_RAW && !buttonsLockedR)
-    {
-        delay_ms(BUTTON_DEBOUNCE_DELAY_MS); // debounce
-        buttonsLockedR = TRUE;
-        pressedUnlockedBtnR = TRUE;
-    }
-    else if (!BtnR_RAW && buttonsLockedR)
-    {
-        delay_ms(BUTTON_DEBOUNCE_DELAY_MS); // debounce
-        buttonsLockedR = FALSE;
+    else {
+        //Handles Button C
+        if (BtnC_RAW && !buttonsLockedC)
+        {
+            delay_ms(BUTTON_DEBOUNCE_DELAY_MS); // debounce
+            buttonsLockedC = TRUE;
+            pressedUnlockedBtnC = TRUE;
+        }
+        else if (!BtnC_RAW && buttonsLockedC)
+        {
+            delay_ms(BUTTON_DEBOUNCE_DELAY_MS); // debounce
+            buttonsLockedC = FALSE;
+        }
+        //Handles Button U
+        else if (BtnU_RAW && !buttonsLockedU)
+        {
+            delay_ms(BUTTON_DEBOUNCE_DELAY_MS); // debounce
+            buttonsLockedU = TRUE;
+            pressedUnlockedBtnU = TRUE;
+        }
+        else if (!BtnU_RAW && buttonsLockedU)
+        {
+            delay_ms(BUTTON_DEBOUNCE_DELAY_MS); // debounce
+            buttonsLockedU = FALSE;
+        }
+        //Handles Button D
+        else if (BtnD_RAW && !buttonsLockedD)
+        {
+            delay_ms(BUTTON_DEBOUNCE_DELAY_MS); // debounce
+            buttonsLockedD = TRUE;
+            pressedUnlockedBtnD = TRUE;
+        }
+        else if (!BtnD_RAW && buttonsLockedD)
+        {
+            delay_ms(BUTTON_DEBOUNCE_DELAY_MS); // debounce
+            buttonsLockedD = FALSE;
+        }
+        //Handles Button L
+        else if (BtnL_RAW && !buttonsLockedL)
+        {
+            delay_ms(BUTTON_DEBOUNCE_DELAY_MS); // debounce
+            buttonsLockedL = TRUE;
+            pressedUnlockedBtnL = TRUE;
+        }
+        else if (!BtnL_RAW && buttonsLockedL)
+        {
+            delay_ms(BUTTON_DEBOUNCE_DELAY_MS); // debounce
+            buttonsLockedL = FALSE;
+        }
+        //Handles Button R
+        else if (BtnR_RAW && !buttonsLockedR)
+        {
+            delay_ms(BUTTON_DEBOUNCE_DELAY_MS); // debounce
+            buttonsLockedR = TRUE;
+            pressedUnlockedBtnR = TRUE;
+        }
+        else if (!BtnR_RAW && buttonsLockedR)
+        {
+            delay_ms(BUTTON_DEBOUNCE_DELAY_MS); // debounce
+            buttonsLockedR = FALSE;
+        }
     }
 }
 void delay_ms(int milliseconds)
@@ -534,20 +559,36 @@ void setting_alarm_algorithm(void) { //Algorithm that causes digits to flip when
 }
 
 void alarm() {
+    LCD_WriteStringAtPos("    Alarming    ", 1, 0);
+    ticking_algorithm();
     if (counter>=180) {
         sec1++;
         counter=0;
     }
+    else if (counter<=90) {
+        turnOnAlarm();
+        RGBLED_SetValue(0xFF, 0x00 , 0x00);
+        SSD_WriteDigits(sec1,sec2,min1,min2,0,0,0,0);
+    }
+    else {
+        turnOffAlarm();
+        RGBLED_SetValue(0x00,0x00,0x00);
+        SSD_WriteDigits(-1,-1,-1,-1,0,0,0,0);
+    }
     counter++;
-    if (sec1%1==0) {
+    /*
+    if ((sec1%2)==0) {
         turnOnAlarm();
         //SSDs on
+        SSD_WriteDigits(sec1,sec2,min1,min2,0,0,0,0);
         //RGB on
     }
-    else if (sec1%1==1) {
+    else if ((sec1%2)==1) {
         turnOffAlarm();
         //SSDs off
+        T1CONbits.ON=0;
         //RGB off
     }
+    */
 }
     
