@@ -117,6 +117,7 @@ int main(void)
         handle_button_presses();
         //Mode 1, Set the start time.
         if (mode==SET_TIMER) {
+            //allow initial values for timer to be set
             LCD_WriteStringAtPos("", 1, 0);
             set_time();
             SSD_WriteDigits(sec1,sec2,min1,min2,0,0,0,0);
@@ -126,6 +127,7 @@ int main(void)
             }
         }
         else if (mode==SET_ALARM) {
+            //allow alarm values to be set
             set_alarm();
             SSD_WriteDigits(alarm_sec1,alarm_sec2,alarm_min1,alarm_min2,0,0,0,0);
             if (pressedUnlockedBtnC) {
@@ -138,6 +140,7 @@ int main(void)
         }
         //Mode 3, Clock is counting up.
         else if (mode==TIMER_TICKS) {
+            //Algorithmically displays timer values on SSDs
             run_clock();
             SSD_WriteDigits(sec1,sec2,min1,min2,0,0,0,0);
             if (pressedUnlockedBtnC) {
@@ -149,6 +152,8 @@ int main(void)
             }
         }
         else if (mode==ALARMING) {
+            //Continues displaying timer values on SSDs, blinks SSDs, red RGB,
+            // and alarm sounds
             LCD_WriteStringAtPos("",1,0);
             alarm();
             if (pressedUnlockedBtnC_R) {
@@ -256,6 +261,7 @@ void handle_button_presses()
     pressedUnlockedBtnC_R = FALSE;
     
     if (mode==ALARMING) {
+        //Checks if BtnC and BtnR are pressed at the same time
         if (BtnC_RAW && BtnR_RAW) {
             buttonsLockedC=TRUE;
             buttonsLockedR=TRUE;
@@ -561,19 +567,23 @@ void setting_alarm_algorithm(void) { //Algorithm that causes digits to flip when
 void alarm() {
     LCD_WriteStringAtPos("    Alarming    ", 1, 0);
     ticking_algorithm();
+    //continue incrementing rightmost SSD
     if (counter>=180) {
         sec1++;
         counter=0;
     }
     else if ( (sec2 > alarm_sec2) && (sec1 >= alarm_sec1)) {
+        //if 10 seconds has passed
         mode=TIMER_TICKS;
     }
     else if (counter<=90) {
+        //on state for outputs
         turnOnAlarm();
         RGBLED_SetValue(0xFF, 0x00 , 0x00);
         SSD_WriteDigits(sec1,sec2,min1,min2,0,0,0,0);
     }
     else {
+        //off state for outputs
         turnOffAlarm();
         RGBLED_SetValue(0x00,0x00,0x00);
         SSD_WriteDigits(-1,-1,-1,-1,0,0,0,0);
