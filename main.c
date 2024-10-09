@@ -565,6 +565,9 @@ void alarm() {
         sec1++;
         counter=0;
     }
+    else if ( (sec2 > alarm_sec2) && (sec1 >= alarm_sec1)) {
+        mode=TIMER_TICKS;
+    }
     else if (counter<=90) {
         turnOnAlarm();
         RGBLED_SetValue(0xFF, 0x00 , 0x00);
@@ -576,19 +579,5 @@ void alarm() {
         SSD_WriteDigits(-1,-1,-1,-1,0,0,0,0);
     }
     counter++;
-    /*
-    if ((sec1%2)==0) {
-        turnOnAlarm();
-        //SSDs on
-        SSD_WriteDigits(sec1,sec2,min1,min2,0,0,0,0);
-        //RGB on
-    }
-    else if ((sec1%2)==1) {
-        turnOffAlarm();
-        //SSDs off
-        T1CONbits.ON=0;
-        //RGB off
-    }
-    */
 }
     
