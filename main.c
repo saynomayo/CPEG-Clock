@@ -53,9 +53,12 @@ void alarm(void);
 #define BtnR_RAW PORTBbits.RB8
 #define BtnU_RAW PORTBbits.RB1
 #define BtnD_RAW PORTAbits.RA15
+#define SW7 PORTBbits.RB9
 #define TRUE 1
 #define FALSE 0
 #define BUTTON_DEBOUNCE_DELAY_MS 20
+#define RED 0xFF
+#define BLUE 0x8F
 
 /***** This section contains variables for the speaker ******/
 #define TMR_FREQ_SINE   48000 // 48 kHz
@@ -102,6 +105,7 @@ char alarm_sec1 = 0;
 char alarm_sec2 = 0;
 int selection = 1;
 int counter=0;
+int rgb_counter = 0;
 /* ----------------------------- Main --------------------------------------- */
 int main(void)
 {
@@ -157,7 +161,6 @@ int main(void)
             LCD_WriteStringAtPos("",1,0);
             alarm();
             if (pressedUnlockedBtnC_R) {
-                RGBLED_SetValue(0x00,0x00,0x00);
                 mode=TIMER_TICKS;
             }
         }
@@ -175,9 +178,11 @@ void initialize_ports()
     TRISBbits.TRISB8 = 1;
     TRISAbits.TRISA15 = 1;
     TRISBbits.TRISB1 = 1;
+    TRISBbits.TRISB8 = 1;
     ANSELBbits.ANSB1 = 0;
     ANSELBbits.ANSB0 = 0;
     ANSELBbits.ANSB8 = 0;
+    ANSELBbits.ANSB9 = 0;
     
     LCD_Init(); // A library function provided by Digilent
     SSD_Init();    //SSD Init
@@ -468,17 +473,27 @@ void set_time(void) {
 }
     
 void run_clock(void) {
+    if (!SW7) {
+        RGBLED_SetValue(0x00,0xFF,0x00);
+        turnOffAlarm();
     //Handles "TIMER_TICKS" mode
-    LCD_WriteStringAtPos("  Display Time   ", 1, 0); //Display "Press BtnC" at line 1
-    ticking_algorithm();
-    if (alarm_sec1 == sec1 && alarm_sec2 == sec2 && alarm_min1 == min1 && alarm_min2 == min2) {
-        mode=ALARMING;
+        LCD_WriteStringAtPos("  Display Time   ", 1, 0); //Display "Press BtnC" at line 1
+        ticking_algorithm();
+        if (alarm_sec1 == sec1 && alarm_sec2 == sec2 && alarm_min1 == min1 && alarm_min2 == min2) {
+            mode=ALARMING;
+        }
+        if (counter>=180) {
+            sec1++;
+            counter=0;
+        }
+        counter++;
     }
-    if (counter>=180) {
-        sec1++;
-        counter=0;
+    else if (SW7) {
+        RGBLED_SetValue(0xFF,0x00,0x8F);
+        
+        LCD_WriteStringAtPos("", 1, 0);
+        LCD_WriteStringAtPos("     Paused     ", 1, 0);
     }
-    counter++;
 }
 
 void set_alarm(void) {
