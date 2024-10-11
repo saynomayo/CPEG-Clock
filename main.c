@@ -57,8 +57,6 @@ void alarm(void);
 #define TRUE 1
 #define FALSE 0
 #define BUTTON_DEBOUNCE_DELAY_MS 20
-#define RED 0xFF
-#define BLUE 0x8F
 
 /***** This section contains variables for the speaker ******/
 #define TMR_FREQ_SINE   48000 // 48 kHz
@@ -106,6 +104,8 @@ char alarm_sec2 = 0;
 int selection = 1;
 int counter=0;
 int rgb_counter = 0;
+int RED = 0xFF;
+int BLUE = 0xFF;
 /* ----------------------------- Main --------------------------------------- */
 int main(void)
 {
@@ -489,8 +489,20 @@ void run_clock(void) {
         counter++;
     }
     else if (SW7) {
-        RGBLED_SetValue(0xFF,0x00,0x8F);
-        
+        RGBLED_SetValue(RED,0x00,BLUE);
+        if (rgb_counter>524) {
+            rgb_counter=0;
+        }   
+        else if (rgb_counter<=254) {
+            RED--;
+            BLUE--;
+        }
+        else if (rgb_counter>270) {
+            RED++;
+            BLUE++;
+        }
+       
+        rgb_counter++;
         LCD_WriteStringAtPos("", 1, 0);
         LCD_WriteStringAtPos("     Paused     ", 1, 0);
     }
