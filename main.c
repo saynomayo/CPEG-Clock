@@ -126,6 +126,7 @@ int main(void)
             set_time();
             SSD_WriteDigits(sec1,sec2,min1,min2,0,0,0,0);
             if (pressedUnlockedBtnC) {
+                RGBLED_SetValue(0x00,0x00,0x00);
                 LCD_WriteStringAtPos("", 1,0);
                 mode = SET_ALARM;
             }
@@ -135,10 +136,12 @@ int main(void)
             set_alarm();
             SSD_WriteDigits(alarm_sec1,alarm_sec2,alarm_min1,alarm_min2,0,0,0,0);
             if (pressedUnlockedBtnC) {
+                RGBLED_SetValue(0x00,0x00,0x00);
                 LCD_WriteStringAtPos("", 1,0);
                 mode=TIMER_TICKS;
             }
             if (pressedUnlockedBtnR) {
+                RGBLED_SetValue(0x00,0x00,0x00);
                 mode=SET_TIMER;
             }
         }
@@ -148,10 +151,12 @@ int main(void)
             run_clock();
             SSD_WriteDigits(sec1,sec2,min1,min2,0,0,0,0);
             if (pressedUnlockedBtnC) {
+                RGBLED_SetValue(0x00,0x00,0x00);
                 LCD_WriteStringAtPos("", 1,0);
                 mode=SET_ALARM;
             }
             else if (pressedUnlockedBtnR) {
+                RGBLED_SetValue(0x00,0x00,0x00);
                 mode=SET_TIMER;
             }
         }
@@ -161,6 +166,7 @@ int main(void)
             LCD_WriteStringAtPos("",1,0);
             alarm();
             if (pressedUnlockedBtnC_R) {
+                RGBLED_SetValue(0x00,0x00,0x00);
                 mode=TIMER_TICKS;
             }
         }
@@ -222,7 +228,7 @@ void initialize_output_states()
     else if (mode==TIMER_TICKS){
         LCD_WriteStringAtPos("   Display Time   ", 1, 0); //Display "Press BtnC" at line 1
     }
-    
+    //error check
     else {
         LCD_WriteStringAtPos("   sum ting wong   ", 1, 0);
     }
@@ -474,6 +480,7 @@ void set_time(void) {
     
 void run_clock(void) {
     if (!SW7) {
+        //sets RGB to green
         RGBLED_SetValue(0x00,0xFF,0x00);
         turnOffAlarm();
     //Handles "TIMER_TICKS" mode
@@ -489,6 +496,7 @@ void run_clock(void) {
         counter++;
     }
     else if (SW7) {
+        //sets RGB to pulse pink and pauses timer
         RGBLED_SetValue(RED,0x00,BLUE);
         if (rgb_counter>524) {
             rgb_counter=0;
